@@ -86,8 +86,8 @@ public abstract class SOSGame {
 						countSOS++;
 						
 					}
-				}// j = 0, i = 1 is line down the middle
-				else if(board[j][i] == s && board[j+1][i] == o && board[j+2][i] == s) {
+				}
+				if(board[j][i] == s && board[j+1][i] == o && board[j+2][i] == s) {
 					String key = j + "," + i + " " + (j+2) + ',' + i;
 					if (!foundSOS.contains(key)) {
 						foundSOS.add(key);
@@ -168,5 +168,4 @@ public abstract class SOSGame {
 		board = new Cell[SIZE][SIZE];
 		initGame();
 	}
-	
 }

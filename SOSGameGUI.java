@@ -311,7 +311,7 @@ public class SOSGameGUI extends JFrame{
 							drawLineThroughCells(g2d, i, j, i, j + 2);
 						}
 					}
-					else if(game.getBoardCell(j,i) == s && game.getBoardCell(j+1,i) == o && game.getBoardCell(j+2,i) == s) {
+					if(game.getBoardCell(j,i) == s && game.getBoardCell(j+1,i) == o && game.getBoardCell(j+2,i) == s) {
 						String key = j + "," + i + " " + (j+2) + ',' + i;
 						if(!drawnSOS.containsKey(key)) {
 							drawnSOS.put(key, color);
