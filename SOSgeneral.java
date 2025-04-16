@@ -1,6 +1,6 @@
 package sos;
 
-public class SOSgeneral extends SOSGame{
+public class SOSgeneral extends SOSsolo{
 	
 	private int bScore;
 	private int rScore;
@@ -30,13 +30,53 @@ public class SOSgeneral extends SOSGame{
 		if(row >= 0 && row < SIZE && col >= 0 && col < SIZE && getBoardCell(row, col) == Cell.EMPTY) {
 			if(getTurn() == 'B'){
 				setBoardCell(row, col, (getBlueLetter() == sORo.S)?  Cell.S: Cell.O);
+				
 				setTurn('R');
 				updateScore('B');
+				setLastScorer('B');
+				
+				if(getBSolo() != true || getRSolo() != true) {
+					//If blue human scored, exit
+					if(getTurn() != 'B' || getBSolo()) {
+
+						//After a move, make computer move if necessary
+						if(!isFull()) {
+							if(getRSolo() == true && getTurn() == 'R') {
+								makeCMove();
+								setLastScorer('R');
+							}
+							else if(getBSolo() == true && getTurn() == 'B') {
+								makeCMove();
+								setLastScorer('B');
+							}
+						}
+					}
+				}
 			}
-			else {
+			else if(getTurn() == 'R'){
 				setBoardCell(row, col, (getRedLetter() == sORo.S)?  Cell.S: Cell.O);
+				
 				setTurn('B');
 				updateScore('R');
+				setLastScorer('R');
+				
+				if(getBSolo() != true || getRSolo() != true) {
+					//If red human scored, exit
+					if(getTurn() != 'R' || getRSolo()) {
+						
+						//computer move
+						if(!isFull()) {
+							if(getBSolo() == true && getTurn() == 'B'){
+								makeCMove();
+								setLastScorer('B');
+							}
+							else if(getRSolo() == true && getTurn() == 'R') {
+								makeCMove();
+								setLastScorer('R');
+							}
+						}
+					}
+				}
 			}
 		}
 		updateGameState();
@@ -84,6 +124,9 @@ public class SOSgeneral extends SOSGame{
 		bScore = 0;
 		rScore = 0;
 		winner = 'N';
+		setBSolo(false);
+		setRSolo(false);
+		
 	}
 	
 	@Override
@@ -92,5 +135,7 @@ public class SOSgeneral extends SOSGame{
 		bScore = 0;
 		rScore = 0;
 		winner = 'N';
+		if(getBSolo() == true && getRSolo() == false)
+			makeRandMove();
 	}
 }

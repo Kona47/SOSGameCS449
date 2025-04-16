@@ -57,15 +57,32 @@ public abstract class SOSGame {
 	public void setBoard(int size) {board = new Cell[size][size];}
 	public void setBoardCell(int row, int col, Cell c) {board[row][col] = c;}
 	
+	//Holds the person's turn
 	private char turn;
-	
 	public char getTurn() {return turn;}
 	public void setTurn(char t) {this.turn = t;}
+	
+	//For computer games
+	private boolean bSolo = false;
+	public boolean getBSolo() {return bSolo;}
+	public void setBSolo(boolean s) {this.bSolo = s;}
+	
+	private boolean rSolo = false;
+	public boolean getRSolo() {return rSolo;}
+	public void setRSolo(boolean s) {this.rSolo = s;}
+	
+	//For drawing the correct color line
+	private char lastScorer;
+	public char getLastScorer(){return lastScorer;}
+	public void setLastScorer(char lastScorer) {this.lastScorer = lastScorer;}
 	
 	//Abstract for updating game state after a move is made.
 	public abstract void updateGameState();
 	//Abstract for making a move in a game
 	public abstract void makeMove(int row, int col);
+	//reset game abstract function
+	public abstract void resetGame();
+	
 	//Keep track of sos that have been scored
 	protected Set<String> foundSOS = new HashSet<>();
 	//For checking for a new S-O-S sequence.
@@ -132,12 +149,11 @@ public abstract class SOSGame {
 		return true;
 	}
 
-	// reset game abstract function
+	// reset function
 	public void reset() {
 		initGame();
 		foundSOS.clear();
 	}
-	public abstract void resetGame();
 	
 	public void fillBoard(){
 		for(int i = 0; i < SIZE; i++) {

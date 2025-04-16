@@ -238,5 +238,54 @@ public class TestSOSGame {
 		game.setRedLetter(sORo.O);
 		assertEquals(game.getBlueLetter(), sORo.O);
 	}
+	
+	@Test
+	public void testRedComputerMove() { // AC 8.1 and 8.5
+		setup(GameMode.SIMPLE);
+		//Make red a computer
+		game.setRSolo(true);
+		game.makeMove(0,0);
+		int empty = 0;
+		if (game instanceof SOSsimple) {
+    		empty = ((SOSsimple) game).getNumEmptyCells();
+		}
+		//Checking a computer move was made so 2 moves should have been made on board. 
+    	assertEquals(game.SIZE*game.SIZE-2, empty);
+		
+	}
+	
+	@Test
+	public void testBlueComputerMove() { // AC 8.2 and 8.4
+		setup(GameMode.SIMPLE);
+		//Make blue a computer
+		game.setBSolo(true);
+		int empty = 0;
+		if (game instanceof SOSsimple) {
+			((SOSsimple) game).makeCMove();
+    		empty = ((SOSsimple) game).getNumEmptyCells();
+		}
+		//Checking a computer move was made so 2 moves should have been made on board. 
+    	assertEquals(game.SIZE*game.SIZE-1, empty);
+		
+	}
+	
+	@Test
+	public void test2ComputerGameMoves() { // AC 8.3
+		setup(GameMode.SIMPLE);
+		//Make both a computer
+		game.setBSolo(true);
+		game.setRSolo(true);
+		//initiate first computer move
+		if (game instanceof SOSsimple)
+			((SOSsimple) game).makeCMove();
+		//Make sure game has been simulated. Else, fail
+		if(game.getGameState() == GameState.BLUE_WON || game.getGameState() == GameState.RED_WON
+			|| game.getGameState() == GameState.DRAW) {
+			assertTrue(true);
+		}
+		else {
+			assertTrue(false);
+		}
+	}
 }
 	

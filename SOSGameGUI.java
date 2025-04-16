@@ -6,7 +6,6 @@ import java.awt.event.*;
 import sos.SOSGame.*;
 import java.util.HashMap;
 import java.util.Map;
-
 //Implemented a lot of following code from TicTacToe example provided
 
 @SuppressWarnings("serial")
@@ -29,6 +28,10 @@ public class SOSGameGUI extends JFrame{
 	private JRadioButton ro;
 	private JRadioButton simple;
 	private JRadioButton general;
+	private JRadioButton bHuman;
+	private JRadioButton rHuman;
+	private JRadioButton bComputer;
+	private JRadioButton rComputer;
 
 	private JLabel sizeLabel = new JLabel("    Board Size:");
 	private Integer[] sizes = {3, 4, 5, 6, 7, 8, 9, 10};
@@ -56,6 +59,21 @@ public class SOSGameGUI extends JFrame{
 		simple = new JRadioButton("Simple Game", true);
 		general = new JRadioButton("General Game");
 		sizeField = new JComboBox<>(sizes);
+		//Human/Computer buttons
+		bHuman = new JRadioButton("Human", true);
+		rHuman = new JRadioButton("Human", true);
+		bComputer = new JRadioButton("Computer", false);
+		rComputer = new JRadioButton("Computer", false);
+
+		bComputer.addActionListener(new SOSsoloListener());
+		rComputer.addActionListener(new SOSsoloListener());
+		bComputer.setForeground(Color.WHITE);
+		rComputer.setForeground(Color.WHITE);
+		
+		bHuman.addActionListener(new SOSsoloListener());
+		rHuman.addActionListener(new SOSsoloListener());
+		bHuman.setForeground(Color.WHITE);
+		rHuman.setForeground(Color.WHITE);
 
 		bSize.setOpaque(false);
 		gameType.setOpaque(false);
@@ -70,7 +88,6 @@ public class SOSGameGUI extends JFrame{
 		gameStatusBar.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 15));
 		gameStatusBar.setBorder(BorderFactory.createEmptyBorder(2, 5, 4, 5));
 		
-		
 		//S-O buttons for blue and red players. Text color set to white
 		bs.setForeground(Color.WHITE);
 		bo.setForeground(Color.WHITE);
@@ -82,10 +99,18 @@ public class SOSGameGUI extends JFrame{
 		bo.addActionListener(new BlueRadioButtonListener());
 		
 		
-		//These groups are for S O buttons for blue/red players
+		//These groups are for S O buttons for blue/red players and for Human/Computer
 		ButtonGroup moveGroupBlue = new ButtonGroup();
 		moveGroupBlue.add(bs);
 		moveGroupBlue.add(bo);
+		
+		ButtonGroup blueComputer = new ButtonGroup();
+		blueComputer.add(bHuman);
+		blueComputer.add(bComputer);
+		
+		ButtonGroup redComputer = new ButtonGroup();
+		redComputer.add(rHuman);
+		redComputer.add(rComputer);
 		
 		ButtonGroup moveGroupRed = new ButtonGroup();
 		moveGroupRed.add(rs);
@@ -95,6 +120,8 @@ public class SOSGameGUI extends JFrame{
 		ButtonGroup gameGroup = new ButtonGroup();
 		gameGroup.add(simple);
 		gameGroup.add(general);
+		
+		
 		
 		simple.addActionListener(new gameModeListener());
 		general.addActionListener(new gameModeListener());
@@ -112,16 +139,26 @@ public class SOSGameGUI extends JFrame{
 		panel.add(bSize);
 		
 		//panel for blue side
-        bluePanel.add(new JLabel("Blue Player"));
+		JLabel b = new JLabel("Blue Player");
+		b.setForeground(Color.WHITE);
+		b.setFont(new Font("Arial", Font.BOLD, 14));
+        bluePanel.add(b);
         bluePanel.setPreferredSize(new Dimension(100, 300));
+        bluePanel.add(bHuman);
 		bluePanel.add(bs);
 		bluePanel.add(bo);
+		bluePanel.add(bComputer);
 		
 		//panel for red side
-        redPanel.add(new JLabel("Red Player"));
+		JLabel r = new JLabel("Red Player");
+		r.setForeground(Color.WHITE);
+		r.setFont(new Font("Arial", Font.BOLD, 14));
+        redPanel.add(r);
         redPanel.setPreferredSize(new Dimension(100, 300)); 
+        redPanel.add(rHuman);
 		redPanel.add(rs);
 		redPanel.add(ro);
+		redPanel.add(rComputer);
 
 		//Add panels to the frame
 		add(panel, BorderLayout.NORTH);
@@ -195,6 +232,8 @@ public class SOSGameGUI extends JFrame{
 			}
 			//reset
 			game.resetGame();
+			bHuman.setSelected(true);
+			rHuman.setSelected(true);
 			bs.setSelected(true);
 			rs.setSelected(true);
 			sizeField.setSelectedIndex(0);
@@ -214,6 +253,9 @@ public class SOSGameGUI extends JFrame{
 			adjustBoardSize();
 			//reset
 			game.resetGame();
+			if (game.getBSolo() && game.getRSolo()) 
+			    startCvCGame();
+			
 			bs.setSelected(true);
 			rs.setSelected(true);
 	        //Remove old canvas and create a new one
@@ -225,8 +267,90 @@ public class SOSGameGUI extends JFrame{
 		}
 	}
 	
+	//Action listener for solo game vs computer. 
+	//The downcasting code snippet I learned from ChatGPT, I did not know this was a thing in Java
+	//Only way to call makeCMove() since game is viewed as just an SOSGame()
+	private class SOSsoloListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			
+			if(bComputer.isSelected()) {
+				game.setBSolo(true);
+				
+				//If both computers selected, play computer game
+				if(game.getRSolo() == true) {
+					startCvCGame();
+			        repaint();
+				}
+		        
+		        // Check if a move needs to be made immediately
+				else if(game.getTurn() == 'B' && game.getGameState() == GameState.PLAYING) {
+		        	if (game instanceof SOSsimple) 
+		        		((SOSsimple) game).makeCMove();
+			        else if (game instanceof SOSgeneral) 
+			            ((SOSgeneral) game).makeCMove();
+		        	repaint();
+		        }
+			}
+			
+			if(rComputer.isSelected()) {
+				game.setRSolo(true);
+				
+				//If both computers selected, play computer game
+				if(game.getBSolo() == true) {
+					startCvCGame();
+			        repaint();
+				}
+				
+				// Check if a move needs to be made immediately
+				else if(game.getTurn() == 'R' && game.getGameState() == GameState.PLAYING) {
+		        	
+		        	if (game instanceof SOSsimple) 
+		        		((SOSsimple) game).makeCMove();
+			        else if (game instanceof SOSgeneral) 
+			            ((SOSgeneral) game).makeCMove();
+		        }
+			}
+			
+			if(bHuman.isSelected()) {
+				game.setBSolo(false);
+			}
+			if(rHuman.isSelected()) {
+				game.setRSolo(false);
+			}
+		}
+	}
 	
-	class GameBoardCanvas extends JPanel {
+	//This function is to run computer vs computer game with step by step moves
+	private void startCvCGame() {
+	    Timer timer = new Timer(500, null);
+	    timer.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e) {
+	            if (game.getGameState() != GameState.PLAYING || game.isFull()) {
+	                ((Timer) e.getSource()).stop();
+	                return;
+	            }
+
+	            if (game.getTurn() == 'B' && game.getBSolo()) {
+	                if (game instanceof SOSsimple)
+	                    ((SOSsimple) game).makeCMove();
+	                else if (game instanceof SOSgeneral)
+	                    ((SOSgeneral) game).makeCMove();
+	            } else if (game.getTurn() == 'R' && game.getRSolo()) {
+	                if (game instanceof SOSsimple)
+	                    ((SOSsimple) game).makeCMove();
+	                else if (game instanceof SOSgeneral)
+	                    ((SOSgeneral) game).makeCMove();
+	            }
+
+	            repaint();
+	        }
+	    });
+
+	    timer.setInitialDelay(0);
+	    timer.start();
+	}
+	
+	class GameBoardCanvas extends JPanel{
 
 		GameBoardCanvas() {
 			addMouseListener(new MouseAdapter() {
@@ -291,7 +415,7 @@ public class SOSGameGUI extends JFrame{
 			g2d.setStroke(new BasicStroke(5));
 			Color color;
 			//Set color
-			if(game.getTurn() == 'B')
+			if(game.getLastScorer() == 'B')
 				color = Color.BLUE;
 			else
 				color = Color.RED;
@@ -393,6 +517,8 @@ public class SOSGameGUI extends JFrame{
 			game.resetGame();
 			bs.setSelected(true);
 			rs.setSelected(true);
+			if (game.getBSolo() && game.getRSolo()) 
+			    startCvCGame();
 		}
 
 	}
