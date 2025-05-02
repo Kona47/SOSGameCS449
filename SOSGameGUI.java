@@ -1,12 +1,17 @@
 package sos;
 
 import javax.swing.*;
+import javax.swing.Timer;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import sos.SOSGame.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 //Implemented a lot of following code from TicTacToe example provided
+
 
 @SuppressWarnings("serial")
 public class SOSGameGUI extends JFrame{
@@ -32,6 +37,8 @@ public class SOSGameGUI extends JFrame{
 	private JRadioButton rHuman;
 	private JRadioButton bComputer;
 	private JRadioButton rComputer;
+	private JButton record;
+	private JButton replay;
 
 	private JLabel sizeLabel = new JLabel("    Board Size:");
 	private Integer[] sizes = {3, 4, 5, 6, 7, 8, 9, 10};
@@ -98,6 +105,13 @@ public class SOSGameGUI extends JFrame{
 		bs.addActionListener(new BlueRadioButtonListener());
 		bo.addActionListener(new BlueRadioButtonListener());
 		
+		//Record and replay
+		record = new JButton("Record");
+		replay = new JButton("Replay");
+		replay.setEnabled(false);
+		replay.setVisible(false);;
+		record.addActionListener(new RecordListener());
+		replay.addActionListener(new ReplayListener());
 		
 		//These groups are for S O buttons for blue/red players and for Human/Computer
 		ButtonGroup moveGroupBlue = new ButtonGroup();
@@ -159,6 +173,9 @@ public class SOSGameGUI extends JFrame{
 		redPanel.add(rs);
 		redPanel.add(ro);
 		redPanel.add(rComputer);
+		//Record/Replay
+		redPanel.add(record);
+		redPanel.add(replay);
 
 		//Add panels to the frame
 		add(panel, BorderLayout.NORTH);
@@ -254,7 +271,7 @@ public class SOSGameGUI extends JFrame{
 			//reset
 			game.resetGame();
 			if (game.getBSolo() && game.getRSolo()) 
-			    startCvCGame();
+			    CvCGameTimer();
 			
 			bs.setSelected(true);
 			rs.setSelected(true);
@@ -275,10 +292,12 @@ public class SOSGameGUI extends JFrame{
 			
 			if(bComputer.isSelected()) {
 				game.setBSolo(true);
+				/*bs.setVisible(false);
+				bo.setVisible(false);*/
 				
 				//If both computers selected, play computer game
 				if(game.getRSolo() == true) {
-					startCvCGame();
+					CvCGameTimer();
 			        repaint();
 				}
 		        
@@ -294,10 +313,12 @@ public class SOSGameGUI extends JFrame{
 			
 			if(rComputer.isSelected()) {
 				game.setRSolo(true);
+				/*rs.setVisible(false);
+				ro.setVisible(false);*/
 				
 				//If both computers selected, play computer game
 				if(game.getBSolo() == true) {
-					startCvCGame();
+					CvCGameTimer();
 			        repaint();
 				}
 				
@@ -313,15 +334,119 @@ public class SOSGameGUI extends JFrame{
 			
 			if(bHuman.isSelected()) {
 				game.setBSolo(false);
+				/*bs.setVisible(true);
+				bo.setVisible(true);*/
 			}
 			if(rHuman.isSelected()) {
 				game.setRSolo(false);
+				/*rs.setVisible(true);
+				ro.setVisible(true);*/
 			}
 		}
 	}
 	
+	private class RecordListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			game.setRecording(true);
+		    replay.setEnabled(true);
+		    replay.setVisible(true);
+		}
+	}
+	
+	//Read in the recorded game to replay
+	public void replayGame() {
+		File file = new File(System.getProperty("user.home") + "/Desktop/lastGame.txt");
+		Scanner input = null;
+		try {
+			input = new Scanner(file);
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+		}
+			
+		String mode = input.nextLine().trim(); // "Simple" or "General"
+		int size = Integer.parseInt(input.nextLine().trim()); // Read the second line safely
+		//Set the mode
+		if(mode.charAt(0) == 'S') {
+			new SOSsimple();
+			simple.setSelected(true);
+		}
+		else {
+			new SOSgeneral();
+			general.setSelected(true);
+		}
+		//Set the size	
+		game.setSize(size);
+		sizeField.setSelectedIndex(size-3);
+		adjustBoardSize();
+		
+		// Store moves in a list
+		ArrayList<String> moveList = new ArrayList<>();
+		while (input.hasNextLine()) {
+			String line = input.nextLine().trim();
+			if (!line.isEmpty()) moveList.add(line);
+		}
+		input.close();
+		
+		//Create timer for simulation of replay
+		Timer timer = new Timer(500, null);
+		int[] index = {0};
+		//Variables for the details of the move. x y coords, t - turn, l - letter
+		timer.addActionListener(e -> {
+			if (index[0] >= moveList.size()) {
+				((Timer)e.getSource()).stop();
+				System.out.println("Replay finished!");
+				return;
+			}
+		
+			String line = moveList.get(index[0]);
+			index[0]++;
+				
+			int x = Integer.parseInt(line.substring(1, 2));
+			int y = Integer.parseInt(line.substring(3, 4));
+			char t = line.charAt(6);
+			char l = line.charAt(8);
+			// Setting the right letter for the player on gui and in game	
+			if(t == 'B') {
+				if(l == 'S') {
+					game.setBlueLetter(sORo.S);		
+					bs.setSelected(true);
+				}
+				else {
+					game.setBlueLetter(sORo.O);		
+					bo.setSelected(true);
+				}
+			}
+			else {
+				if(l == 'S') {
+					game.setRedLetter(sORo.S);		
+					rs.setSelected(true);
+				}
+				else {
+					game.setRedLetter(sORo.O);		
+					ro.setSelected(true);
+				}
+			}
+			
+			game.makeMove(x,y);
+			revalidate();
+			repaint();
+		});
+			
+		timer.start();
+		System.out.println("Game Replayed Successfuly!");
+	}
+	
+	private class ReplayListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			game.setRSolo(false);
+			game.setBSolo(false);
+			replayGame();	
+			
+		}
+	}
+	
 	//This function is to run computer vs computer game with step by step moves
-	private void startCvCGame() {
+	private void CvCGameTimer() {
 	    Timer timer = new Timer(500, null);
 	    timer.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e) {
@@ -398,11 +523,11 @@ public class SOSGameGUI extends JFrame{
 				for (int col = 0; col < game.getSize(); ++col) {
 					int x = col * CELL_SIZE + CELL_SIZE / 3;
 					int y = row * CELL_SIZE + 2 * CELL_SIZE / 3;
-					if (game.getCell(row, col) == Cell.O) {
+					if (game.getBoardCell(row, col) == Cell.O) {
 						g2d.setColor(Color.BLACK);
 						g2d.drawString("O", x, y);
 					} 
-					else if (game.getCell(row, col) == Cell.S) {
+					else if (game.getBoardCell(row, col) == Cell.S) {
 						g2d.setColor(Color.BLACK);
 						g2d.drawString("S", x, y);
 					}
@@ -493,7 +618,10 @@ public class SOSGameGUI extends JFrame{
 				gameStatusBar.setForeground(Color.BLACK);
 				gameStatusBar.setHorizontalAlignment(SwingConstants.CENTER);;
 				if (game.getTurn() == 'B') {
-					gameStatusBar.setText("Blue's Turn");
+					/*if(game.getGameMode() == GameMode.GENERAL)
+						gameStatusBar.setText("Blue's Turn" + ((SOSgeneral) game).getBScore() + " - "  + ((SOSgeneral) game).getRScore());
+					else*/
+						gameStatusBar.setText("Blue's Turn");
 				} else {
 					gameStatusBar.setText("Red's Turn");
 				}
@@ -518,10 +646,13 @@ public class SOSGameGUI extends JFrame{
 			bs.setSelected(true);
 			rs.setSelected(true);
 			if (game.getBSolo() && game.getRSolo()) 
-			    startCvCGame();
+			    CvCGameTimer();
+			
+			
 		}
 
 	}
+	
 	public static void main(String args[]) {
 		SOSGameGUI game2 = new SOSGameGUI();
 		game2.setVisible(true);

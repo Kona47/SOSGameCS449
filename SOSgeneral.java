@@ -28,9 +28,12 @@ public class SOSgeneral extends SOSsolo{
 	@Override
 	public void makeMove(int row, int col) {
 		if(row >= 0 && row < SIZE && col >= 0 && col < SIZE && getBoardCell(row, col) == Cell.EMPTY) {
+			String m;
 			if(getTurn() == 'B'){
 				setBoardCell(row, col, (getBlueLetter() == sORo.S)?  Cell.S: Cell.O);
-				
+				//Add move to list of moves for output
+				m = "(" + row + "," + col + ") " + getTurn() + " " + getBlueLetter();
+				pushMove(m);
 				setTurn('R');
 				updateScore('B');
 				setLastScorer('B');
@@ -55,7 +58,9 @@ public class SOSgeneral extends SOSsolo{
 			}
 			else if(getTurn() == 'R'){
 				setBoardCell(row, col, (getRedLetter() == sORo.S)?  Cell.S: Cell.O);
-				
+				//Add move to list of moves for output
+				m = "(" + row + "," + col + ") " + getTurn() + " " + getRedLetter();
+				pushMove(m);
 				setTurn('B');
 				updateScore('R');
 				setLastScorer('R');
@@ -87,6 +92,7 @@ public class SOSgeneral extends SOSsolo{
 	public void updateGameState() {
 		//if game over
 		if(isFull()) {
+			writeGame();
 			//check if blue won
 			if(checkWin() == 'B')
 				setGameState(GameState.BLUE_WON);

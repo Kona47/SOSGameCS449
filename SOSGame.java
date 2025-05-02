@@ -1,7 +1,7 @@
 package sos;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.io.*;
 
 public abstract class SOSGame {
 	
@@ -83,8 +83,18 @@ public abstract class SOSGame {
 	//reset game abstract function
 	public abstract void resetGame();
 	
+	//Array of moves to write out. Along with other important info
+	private ArrayList<String> moves = new ArrayList<>();
+	private boolean isRecording = false;
+	
+	public boolean getRecording() {return isRecording;}
+	public void setRecording(boolean r) {this.isRecording = r;}
+	
+	public void pushMove(String move) {this.moves.add(move);}
+	
 	//Keep track of sos that have been scored
 	protected Set<String> foundSOS = new HashSet<>();
+	
 	//For checking for a new S-O-S sequence.
 	public int checkForSOS(){
 		Cell s = Cell.S;
@@ -153,6 +163,8 @@ public abstract class SOSGame {
 	public void reset() {
 		initGame();
 		foundSOS.clear();
+		moves.clear();
+		setRecording(false);
 	}
 	
 	public void fillBoard(){
@@ -163,14 +175,26 @@ public abstract class SOSGame {
 		}
 	}
 	
-	public Cell getCell(int row, int column) {
-		if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
-			return board[row][column];
-		} 
-		else {
-			return null;
+	//Write out game to file
+	public void writeGame() {
+		PrintWriter output = null;
+		try {
+			output = new PrintWriter(System.getProperty("user.home") + "/Desktop/lastGame.txt");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
+		
+		output.println(currentGameMode + "\n" + SIZE);
+		//Output the moves
+		for(int i = 0; i < moves.size(); i++) {
+			output.println(moves.get(i));
+		}
+		output.close();
+		System.out.println("Game Written Out Successfuly!");
 	}
+	
+	
+	
 	//Things to start a new game
 	public void initGame() {
 		this.fillBoard();

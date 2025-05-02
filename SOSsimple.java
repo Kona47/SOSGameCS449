@@ -13,9 +13,12 @@ public class SOSsimple extends SOSsolo{
 	@Override
 	public void makeMove(int row, int col) {
 		if(row >= 0 && row < SIZE && col >= 0 && col < SIZE && getBoardCell(row, col) == Cell.EMPTY) {
-			
+			String m;
 			if(getTurn() == 'B') {
 				setBoardCell(row, col, (getBlueLetter() == sORo.S)?  Cell.S: Cell.O);
+				//Add move to list of moves for output
+				m = "(" + row + "," + col + ") " + getTurn() + " " + getBlueLetter();
+				pushMove(m);
 				updateGameState();
 				
 				if(getGameState() == GameState.PLAYING) {
@@ -27,6 +30,9 @@ public class SOSsimple extends SOSsolo{
 			}
 			else if(getTurn() == 'R'){
 				setBoardCell(row, col, (getRedLetter() == sORo.S)?  Cell.S: Cell.O);
+				//Add move to list of moves for output
+				m = "(" + row + "," + col + ") " + getTurn() + " " + getRedLetter();
+				pushMove(m);
 				updateGameState();
 				
 				if(getGameState() == GameState.PLAYING) {
@@ -43,10 +49,15 @@ public class SOSsimple extends SOSsolo{
 	//Override update game state for a simple win
 	@Override
 	public void updateGameState() {
-		if(checkForSOS() >= 1)
+		if(checkForSOS() >= 1) {
 			setGameState((getTurn() == 'B')? GameState.BLUE_WON : GameState.RED_WON);
-		else if(isFull()) 
+			if(getRecording())
+				writeGame();
+		}
+		else if(isFull()) {
 			setGameState(GameState.DRAW);
+			writeGame();
+		}
 	}
 	
 	@Override

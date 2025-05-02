@@ -71,7 +71,7 @@ public class TestSOSGame {
 		setup(GameMode.SIMPLE);
         // Initial move: Blue places 'S' at (1,1)
         game.makeMove(1, 1);
-        assertEquals(SOSGame.Cell.S, game.getCell(1, 1), "The first move should be an 'S'");
+        assertEquals(SOSGame.Cell.S, game.getBoardCell(1, 1), "The first move should be an 'S'");
 
         // Capture the turn before the invalid move (should be Red's turn now)
         char previousTurn = game.getTurn();
@@ -80,7 +80,7 @@ public class TestSOSGame {
         game.makeMove(1, 1);
 
         // Ensure the cell is still 'S' (unchanged)
-        assertEquals(SOSGame.Cell.S, game.getCell(1, 1), "Cell should remain unchanged after an invalid move");
+        assertEquals(SOSGame.Cell.S, game.getBoardCell(1, 1), "Cell should remain unchanged after an invalid move");
 
         // Ensure the turn did NOT change
         assertEquals(previousTurn, game.getTurn(), "The turn should remain the same after an invalid move");
@@ -149,7 +149,7 @@ public class TestSOSGame {
 	    Cell expectedCell = (game.getBlueLetter() == SOSGame.sORo.S) ? SOSGame.Cell.S : SOSGame.Cell.O;
 
 	    // Check if the move was correctly placed on the board
-	    assertEquals(expectedCell, game.getCell(0, 0));
+	    assertEquals(expectedCell, game.getBoardCell(0, 0));
 
 	    // Check if the turn switched after making the move
 	    assertNotEquals(initialTurn, game.getTurn());
@@ -162,7 +162,7 @@ public class TestSOSGame {
         game.makeMove(1, 1);
         char previousTurn = game.getTurn();
         game.makeMove(1, 1);
-        assertEquals(SOSGame.Cell.S, game.getCell(1, 1), "Cell should remain unchanged after an invalid move");
+        assertEquals(SOSGame.Cell.S, game.getBoardCell(1, 1), "Cell should remain unchanged after an invalid move");
         assertEquals(previousTurn, game.getTurn(), "The turn should remain the same after an invalid move");
     }
 	
